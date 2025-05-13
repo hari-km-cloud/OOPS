@@ -1,0 +1,53 @@
+name: CI for Python 2.7
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    name: Python 2.7 Build & Test
+    runs-on: ubuntu-20.04  # required for pyenv to work reliably
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Python 2.7 via pyenv
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential libssl-dev zlib1g-dev \
+            libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+            libncurses5-dev libncursesw5-dev xz-utils tk-dev
+        git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+        echo 'export PYENV_ROOT="$HOME/.pyenv"' >> $GITHUB_ENV
+        echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> $GITHUB_ENV
+        echo 'eval "$(pyenv init -)"' >> $GITHUB_ENV
+        export PYENV_ROOT="$HOME/.pyenv"
+        export PATH="$PYENV_ROOT/bin:$PATH"
+        eval "$(pyenv init -)"
+        pyenv install 2.7.18
+        pyenv global 2.7.18
+        echo "PYTHON_VERSION=$(python --version)" >> $GITHUB_ENV
+
+    - name: Install pip and dependencies
+      run: |
+        curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
+        python get-pip.py
+        pip install -r requirements.txt || true
+
+    - name: Run tests (nose or pytest for 2.7)
+      run: |
+        pip install pytest==4.6 pytest-cov || true
+        pytest --cov=.
+
+    - name: Lint with flake8 (compatible version)
+      run: |
+        pip install flake8==3.7.9 || true
+        flake8 app/ tests/ || true
+    - name: Build and run Docker image (Python 2.7)
+      run: |
+        docker build -t py27-app .
+        docker run --rm py27-app
