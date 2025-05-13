@@ -1,14 +1,9 @@
-# same class without object
 
 #Outside class, function called using just the class name
 
 class PublicClass:
-    def __init__(self, name = "default_name", area_of_expertise = "default area of expertise"):
+    def __init__(self, name = "your name"):
         self.name = name
-        self.area_of_expertise = area_of_expertise
-
-    def display_area_of_expertise(self):
-        print(self.area_of_expertise)
 
     def multiply_by_3(x):
         y = x*3
@@ -21,6 +16,8 @@ class PublicClass:
     def __add_3(x):
         y = x+3
         return y
+
+
 
 # y = multiply_by_3(7)
 # print(y)
